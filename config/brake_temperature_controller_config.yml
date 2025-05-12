@@ -1,0 +1,6 @@
+/core/control:
+  BrakeTemperatureControllerNode:
+    ros__parameters:
+      max_warm_up_brake_pressure_pa: 2000000.0
+      warm_up_disabled: false
+      max_lap_warm_up: 5

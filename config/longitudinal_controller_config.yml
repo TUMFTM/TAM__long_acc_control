@@ -1,0 +1,14 @@
+/core/control:
+  LongitudinalController:
+    ros__parameters:
+      P_VDC_MinVelSlipCalc_mps: 7.0
+      DriveForceMax_N: 10000.0
+      DriveForceMin_N: -50000.0
+      tS_LongitudinalController: 0.01
+      ABS:
+        IsActivated: True
+        FrontTargetSlip: -10.0
+        RearTargetSlip: -10.0
+      TC:
+        IsActivated: True
+        RearThresholdLatched: 6.0

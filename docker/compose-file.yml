@@ -1,0 +1,42 @@
+services:
+  brake_temperature_controller:
+    image: longcontrol:v1
+    command: bash -c "ros2 run --prefix 'chrt -rr 90' brake_temperature_controller_node_cpp brake_temperature_controller_node --ros-args --params-file /ws/config/brake_temperature_controller_config.yml"
+    network_mode: "host"
+    privileged: true
+    volumes:
+      - ../config:/ws/config
+      - /var/run/lttng:/var/run/lttng
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+  gear_shift_controller:
+    image: longcontrol:v1
+    command: bash -c "ros2 run --prefix 'chrt -rr 95' gear_shift_controller_node_cpp gear_shift_controller_node --ros-args --params-file /ws/config/gear_shift_controller_config.yml"
+    network_mode: "host"
+    privileged: true
+    volumes:
+      - ../config:/ws/config
+      - ../config/vehicle_handler:/ws/install/vehicle_handler_cpp/share/vehicle_handler_cpp/config_overwrite
+      - /var/run/lttng:/var/run/lttng
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+  longitudinal_controller:
+    image: longcontrol:v1
+    command: bash -c "ros2 run --prefix 'chrt -rr 95' longitudinal_controller_node_cpp longitudinal_controller_node --ros-args --params-file /ws/config/longitudinal_controller_config.yml --params-file /ws/config/dummy_engine_map.yml"
+    network_mode: "host"
+    privileged: true
+    volumes:
+      - ../config:/ws/config
+      - ../config/vehicle_handler:/ws/install/vehicle_handler_cpp/share/vehicle_handler_cpp/config_overwrite
+      - /var/run/lttng:/var/run/lttng
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
