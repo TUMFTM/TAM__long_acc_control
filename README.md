@@ -58,19 +58,24 @@ docker compose -f docker/compose-file.yml up
 
 If you use the Longitudinal Controller in your work please consider citing our paper:
 
-[Longitudinal Control for Autonomous Racing with Combustion Engine Vehicles](https://arxiv.org/abs/2504.17418)
+[Longitudinal Control for Autonomous Racing with Combustion Engine Vehicles](https://ieeexplore.ieee.org/document/11097559)
+
 
 ```
-@misc{pitschi2025,
-      title={Longitudinal Control for Autonomous Racing with Combustion Engine Vehicles}, 
-      author={Phillip Pitschi and Simon Sagmeister and Sven Goblirsch and Markus Lienkamp and Boris Lohmann},
-      year={2025},
-      eprint={2504.17418},
-      archivePrefix={arXiv},
-      primaryClass={eess.SY},
-      url={https://arxiv.org/abs/2504.17418}, 
+@INPROCEEDINGS{pitschi2025,
+  author={Pitschi, Phillip and Sagmeister, Simon and Goblirsch, Sven and Lienkamp, Markus and Lohmann, Boris},
+  booktitle={2025 IEEE Intelligent Vehicles Symposium (IV)}, 
+  title={Longitudinal Control for Autonomous Racing with Combustion Engine Vehicles}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1070-1077},
+  keywords={Target tracking;Gears;Trajectory tracking;Wheels;Combustion;Safety;Brakes;Vehicle dynamics;Engines;Autonomous vehicles},
+  doi={10.1109/IV64158.2025.11097559}
 }
 ```
+
+A preprint of the published paper is available on [arXiv](https://arxiv.org/abs/2504.17418).
 
 ## Contact
 

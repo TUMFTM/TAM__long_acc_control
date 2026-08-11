@@ -1,0 +1,56 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "TAM__long_acc_control"
+type: software
+abstract: >-
+  This package provides a longitudinal controller for a combustion engine vehicle
+  consisting of multiple feedforward and feedback parts. It takes a longitudinal
+  acceleration as input and outputs wheel-individual brake pressures, a throttle
+  and a gear command.
+authors:
+  - family-names: "Pitschi"
+    given-names: "Phillip"
+    orcid: "https://orcid.org/0009-0008-2165-2768"
+    affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Engineering Physics & Computation, Institute of Automatic Control"
+    email: "phillip.pitschi@tum.de"
+  - family-names: "Sagmeister"
+    given-names: "Simon"
+    orcid: "https://orcid.org/0009-0002-9246-5456"
+    affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Mobility Systems Engineering, Institute of Automotive Technology"
+    email: "simon.sagmeister@tum.de"
+  - family-names: "Goblirsch"
+    given-names: "Sven"
+    affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Mobility Systems Engineering, Institute of Automotive Technology"
+    email: "sven.goblirsch@tum.de"
+license: Apache-2.0
+repository-code: "https://github.com/TUMFTM/TAM__long_acc_control"
+url: "https://github.com/TUMFTM/TAM__long_acc_control"
+preferred-citation:
+  type: conference-paper
+  title: "Longitudinal Control for Autonomous Racing with Combustion Engine Vehicles"
+  authors:
+    - family-names: "Pitschi"
+      given-names: "Phillip"
+      orcid: "https://orcid.org/0009-0008-2165-2768"
+      affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Engineering Physics & Computation, Institute of Automatic Control"
+    - family-names: "Sagmeister"
+      given-names: "Simon"
+      orcid: "https://orcid.org/0009-0002-9246-5456"
+      affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Mobility Systems Engineering, Institute of Automotive Technology"
+    - family-names: "Goblirsch"
+      given-names: "Sven"
+      affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Mobility Systems Engineering, Institute of Automotive Technology"
+    - family-names: "Lienkamp"
+      given-names: "Markus"
+      orcid: "https://orcid.org/0000-0002-9263-5323"
+      affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Mobility Systems Engineering, Institute of Automotive Technology"
+    - family-names: "Lohmann"
+      given-names: "Boris"
+      orcid: "https://orcid.org/0000-0002-7881-8385"
+      affiliation: "Technical University of Munich, Germany; School of Engineering & Design, Department of Engineering Physics & Computation, Institute of Automatic Control"
+  collection-title: "2025 IEEE Intelligent Vehicles Symposium (IV)"
+  year: 2025
+  start: 1070
+  end: 1077
+  doi: "10.1109/IV64158.2025.11097559"
+  url: "https://ieeexplore.ieee.org/document/11097559"
