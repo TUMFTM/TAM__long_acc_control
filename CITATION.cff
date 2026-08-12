@@ -25,6 +25,7 @@ authors:
 license: Apache-2.0
 repository-code: "https://github.com/TUMFTM/TAM__long_acc_control"
 url: "https://github.com/TUMFTM/TAM__long_acc_control"
+doi: " 10.5281/zenodo.21899629"
 preferred-citation:
   type: conference-paper
   title: "Longitudinal Control for Autonomous Racing with Combustion Engine Vehicles"

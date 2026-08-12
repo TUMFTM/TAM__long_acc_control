@@ -3,6 +3,8 @@
 [![Linux](https://img.shields.io/badge/os-linux-blue.svg)](https://www.linux.org/)
 [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://www.docker.com/)
 [![ROS2humble](https://img.shields.io/badge/ros2-humble-blue.svg)](https://docs.ros.org/en/humble/index.html)
+[![Paper](https://img.shields.io/badge/Paper-10.1109%2FIV64158.2025.11097559-blue?logo=doi&logoColor=white)](https://doi.org/10.1109/IV64158.2025.11097559)
+[![Software](https://img.shields.io/badge/Software-10.5281%2Fzenodo.21899629-blue?logo=zenodo&logoColor=white)](https://doi.org/10.5281/zenodo.21899629)
 
 This package provides a Longitudinal Controller for a Combustion Engine Vehicle consisting of multiple feedforward and feedback parts. It takes a longitudinal acceleration as input and outputs wheel individual brake pressures, a throttle and a gear command. 
 
