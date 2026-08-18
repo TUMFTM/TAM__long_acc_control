@@ -9,7 +9,8 @@ void GearShiftController::step()
   if (param_manager_->get_state_hash() != previous_param_state_hash) {
     declare_and_update_parameters();
   }
-  radps_lb_ = p_.gear_omega_engine_min_table[current_gear_] * ((2.0 * M_PI) / 60.0);
+  radps_lb_ =
+    p_.gear_omega_engine_min_table[std::max(0, current_gear_ - 1)] * ((2.0 * M_PI) / 60.0);
   radps_ub_ = p_.n_ub_rpm * ((2.0 * M_PI) / 60.0);
 
   double ay_max_safety_current{0.0};
@@ -25,7 +26,7 @@ void GearShiftController::step()
 
   if (cosy_) {
     std::size_t next_traj_pt_index = std::clamp<float>(
-      std::ceil(std::get<1>(cosy_->convert_to_sn_and_get_idx(odometry_buffer_))), 0,
+      std::ceil(std::get<1>(cosy_->convert_to_sn_and_get_idx_global(odometry_buffer_))), 0,
       traj_buffer_.points.size() -
         1);  // First clamp and then convert to size_t otherwise it will undefined behavior
 
@@ -173,14 +174,14 @@ void GearShiftController::declare_and_update_parameters()
   p_.i_gearset_table = param_manager_
                          ->declare_and_get_value(
                            "vehicle.drivetrain.gear_ratios",
-                           std::vector<double>({0.0, 2.9167, 1.875, 1.3809, 1.1154, 0.96, 0.8889}),
+                           std::vector<double>({2.9167, 1.875, 1.3809, 1.1154, 0.96, 0.8889}),
                            tam::pmg::ParameterType::DOUBLE_ARRAY, "")
                          .as_double_array();
   p_.gear_omega_engine_min_table =
     param_manager_
       ->declare_and_get_value(
         "GSC_gear_omega_engine_min_table",
-        std::vector<double>({2200.0, 2200.0, 2200.0, 3000.0, 3400.0, 3600.0, 3700.0}),
+        std::vector<double>({2200.0, 2200.0, 3000.0, 3400.0, 3600.0, 3700.0}),
         tam::pmg::ParameterType::DOUBLE_ARRAY, "")
       .as_double_array();
   p_.n_ub_rpm = decl("GSC_P_VDC_POWTR__ENGINE__n_ub_rpm", 4800.0);

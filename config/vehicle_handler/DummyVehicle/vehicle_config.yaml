@@ -23,6 +23,11 @@ vehicle:
     piston_diameter: 0.9                 # [m]
     max_pressure: 800000.0                    # [Pa]
     friction_coeff: 0.3                      # [-]
+    friction:
+      temperature:
+      - 0.0
+      coefficient:
+      - 0.3
   dimension:
     track_width_front: 1.7                              # [m] 
     track_width_rear: 1.6                               # [m]
@@ -74,4 +79,33 @@ vehicle:
     wheel_front: 15.0                             # [kg]
     wheel_rear: 15.0                            # [kg]
   rolling_resistance:
-    coeff: 0.03                      # [-] 
+    coeff: 0.03                      # [-]
+  planning_limits:
+    # Longitudinal acceleration limits at 0, 10, ..., 90 m/s.
+    ax_machine_limits:
+    - 8.0
+    - 7.0
+    - 7.0
+    - 7.0
+    - 6.0
+    - 5.0
+    - 4.0
+    - 3.0
+    - 2.0
+    - 1.0
+    ax_machine_limits_p2p_enabled:
+    - 8.0
+    - 7.0
+    - 7.0
+    - 7.0
+    - 6.0
+    - 5.0
+    - 4.0
+    - 3.0
+    - 2.0
+    - 1.0
+    gg_exponent_ax_pos: 1.31
+    gg_exponent_ax_neg: 1.31
+    ax_min_scale: 1.0
+    ax_max_scale: 1.0
+    ay_scale: 1.0
