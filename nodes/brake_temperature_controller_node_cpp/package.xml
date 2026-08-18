@@ -22,6 +22,7 @@
   <depend>tier4_planning_msgs</depend>
   <depend>tsl_logger_cpp</depend>
   <depend>tsl_ros2_publisher_cpp</depend>
+  <depend>tum_ros_helpers_cpp</depend>
 
 
 

@@ -1,5 +1,6 @@
 // Copyright 2023 Tobias Betz
 #include "brake_temperature_controller_node_cpp/brake_temperature_controller_node.hpp"
+#include "tum_ros_helpers_cpp/qos.hpp"
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -46,24 +47,24 @@ BrakeTemperatureControllerNode::BrakeTemperatureControllerNode(const rclcpp::Nod
 
   // Subscriptions
   brake_temperature_subs_ = this->create_subscription<tum_msgs::msg::TUMFloat64PerWheelStamped>(
-    "/vehicle/sensor/brake_temperature_degree", 1,
+    "/vehicle/sensor/brake_temperature_degree", tam::ros::get_qos(),
     std::bind(&BrakeTemperatureControllerNode::brake_temperature_callback, this, _1));
 
   trajectory_subs_ = this->create_subscription<tier4_planning_msgs::msg::Trajectory>(
-    "/core/planning/target_trajectory/trajectory", 1,
+    "/core/planning/target_trajectory/trajectory", tam::ros::get_qos(),
     std::bind(&BrakeTemperatureControllerNode::trajectory_acceleration_callback, this, _1));
 
   odometry_subs_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "/core/state/odometry", 1,
+    "/core/state/odometry", tam::ros::get_qos(),
     std::bind(&BrakeTemperatureControllerNode::odometry_callback, this, _1));
 
   lap_info_subs_ = this->create_subscription<tum_msgs::msg::TUMAdditionalTrajectoryInfos>(
-    "/core/planning/target_trajectory/additional_info", 1,
+    "/core/planning/target_trajectory/additional_info", tam::ros::get_qos(),
     std::bind(&BrakeTemperatureControllerNode::lap_info_callback, this, _1));
 
   // Publisher
   warm_up_brake_pressure_pub_ = this->create_publisher<tum_msgs::msg::TUMFloat64PerWheelStamped>(
-    "/core/control/warm_up_brake_pressure_pa", 1);
+    "/core/control/warm_up_brake_pressure_pa", tam::ros::get_qos());
 }
 void BrakeTemperatureControllerNode::calculateBrakePressure()
 {

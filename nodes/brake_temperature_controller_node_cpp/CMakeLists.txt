@@ -22,6 +22,7 @@ set(NODE_DEPENDENCIES
   tier4_planning_msgs
   tsl_logger_cpp
   tsl_ros2_publisher_cpp
+  tum_ros_helpers_cpp
 )
 # ============================================
 # END OF CONFIGURATION

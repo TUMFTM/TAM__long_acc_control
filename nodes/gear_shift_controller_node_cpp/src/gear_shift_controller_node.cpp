@@ -1,6 +1,7 @@
 // Copyright 2024 Sven Goblirsch
 #include "gear_shift_controller_node_cpp/gear_shift_controller_node.hpp"
 
+#include "tum_ros_helpers_cpp/qos.hpp"
 #include "tum_ros_helpers_cpp/timer.hpp"
 
 using std::placeholders::_1;
@@ -36,14 +37,16 @@ GearShiftControllerNode::GearShiftControllerNode(
   }
   // Subscriptions
   omega_eng_subs_ = this->create_subscription<tum_msgs::msg::TUMFloat32Stamped>(
-    "/vehicle/sensor/omega_engine_radps", 1,
+    "/vehicle/sensor/omega_engine_radps", tam::ros::get_qos(),
     std::bind(&GearShiftControllerNode::omega_engine_callback, this, _1));
   current_gear_subs_ = this->create_subscription<tum_msgs::msg::TUMInt8Stamped>(
-    "/vehicle/sensor/gear", 1, std::bind(&GearShiftControllerNode::gear_callback, this, _1));
+    "/vehicle/sensor/gear", tam::ros::get_qos(),
+    std::bind(&GearShiftControllerNode::gear_callback, this, _1));
   odometry_subs_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "/core/state/odometry", 1, std::bind(&GearShiftControllerNode::odometry_callback, this, _1));
+    "/core/state/odometry", tam::ros::get_qos(),
+    std::bind(&GearShiftControllerNode::odometry_callback, this, _1));
   acceleration_subs_ = this->create_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
-    "/core/state/acceleration", 1,
+    "/core/state/acceleration", tam::ros::get_qos(),
     std::bind(&GearShiftControllerNode::acceleration_callback, this, _1));
 
   sync_ = std::make_shared<message_filters::TimeSynchronizer<
@@ -51,11 +54,16 @@ GearShiftControllerNode::GearShiftControllerNode(
     sub_trajectory_, sub_constraints_, 1);
   sync_->registerCallback(std::bind(&GearShiftControllerNode::trajectory_callback, this, _1, _2));
 
-  sub_trajectory_.subscribe(this, "/core/planning/target_trajectory/trajectory");
-  sub_constraints_.subscribe(this, "/core/planning/target_trajectory/constraints");
+  sub_trajectory_.subscribe(
+    this, "/core/planning/target_trajectory/trajectory",
+    tam::ros::get_qos().get_rmw_qos_profile());
+  sub_constraints_.subscribe(
+    this, "/core/planning/target_trajectory/constraints",
+    tam::ros::get_qos().get_rmw_qos_profile());
   // Publisher
   gear_request_pub_ =
-    this->create_publisher<tum_msgs::msg::TUMInt8Stamped>("/core/control/gear_request", 1);
+    this->create_publisher<tum_msgs::msg::TUMInt8Stamped>(
+      "/core/control/gear_request", tam::ros::get_qos());
 
   monitor_->initialization_finished();
   monitor_->set_error_lvl("Initializing", tam::types::ErrorLvl::WARN);
