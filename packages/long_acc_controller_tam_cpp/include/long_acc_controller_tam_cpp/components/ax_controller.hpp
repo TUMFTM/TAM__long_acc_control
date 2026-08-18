@@ -7,7 +7,6 @@
 #include <string>
 
 #include "controller_helpers_cpp/helpers.hpp"
-#include "long_acc_controller_tam_cpp/components/slip_controller/slip_controller_types.hpp"
 #include "param_management_cpp/param_value_manager.hpp"
 #include "tsl_logger_cpp/value_logger.hpp"
 #include "tum_helpers_cpp/constants.hpp"
@@ -29,7 +28,6 @@ private:
     double DriveForceMax_N;
     double DriveForceMin_N;
     double FxMaxSlope_Nps;
-    double NegativeFxStandstill;
     double vehiclemass_kg;
     double LongAccKp;
     double LongAccKd;
@@ -51,16 +49,15 @@ private:
   tam::tsl::ValueLogger::SharedPtr logger_ = std::make_shared<tam::tsl::ValueLogger>();
 
   // buffer
+  bool slip_control_active_{};
   double feedback_ax_buffer_{};
   double velocity_buffer_{};
   double LongAcc_target_mps2_{};
   double LongAcc_error_old_mps2{};
   double LongAcc_target_old_mps2{};
   double Fx_LongControlRequest_old{};
-  bool EnableEmergency_{};
-  bool EnableDriver_{};
   double Fx_LongControlRequest_N{};
-  SlipControlStatus slip_control_status_{};
+  
 
   // filter
   tam::helpers::control::FirstOrderLowPass<double> fb_filter_{0.0, 0.0};
@@ -79,7 +76,6 @@ private:
     p_.DriveForceMax_N = decl("DriveForceMax_N", 6000.0);
     p_.DriveForceMin_N = decl("DriveForceMin_N", -35000.0);
     p_.FxMaxSlope_Nps = decl("P_VDC_FxMaxSlope_Nps", 200000.0);
-    p_.NegativeFxStandstill = decl("P_VDC_NegativeFxStandstill", -2000.0);
     p_.vehiclemass_kg = decl("vehicle.mass.total", 800.0);
     p_.LongAccKp = decl("P_VDC_LongAccKp", 100.0);
     p_.LongAccKd = decl("P_VDC_LongAccKd", 0.5);
@@ -150,22 +146,17 @@ public:
     // endregion
 
     // total force request
-    bool slip_control_active = slip_control_status_.abs_latched || slip_control_status_.tc_latched;
     Fx_LongControlRequest_N =
-      LongAcc_FB_N * (!slip_control_active) + FF_LongAcc_N + FF_Aero_N + FF_RollingResistance_N;
+      LongAcc_FB_N * (!slip_control_active_) + FF_LongAcc_N + FF_Aero_N + FF_RollingResistance_N;
 
     // Output checks
-    double drive_force_max_N = EnableEmergency_ ? 0.0 : p_.DriveForceMax_N;
     double delta_force_max_N = p_.FxMaxSlope_Nps * p_.tS;
-    Fx_LongControlRequest_N =
-      !EnableDriver_
-        ? p_.NegativeFxStandstill
-        : std::min(
+    Fx_LongControlRequest_N = std::min(
             Fx_LongControlRequest_old + delta_force_max_N,
             std::max(Fx_LongControlRequest_old - delta_force_max_N, Fx_LongControlRequest_N));
     Fx_LongControlRequest_old = Fx_LongControlRequest_N;
     Fx_LongControlRequest_N =
-      std::min(drive_force_max_N, std::max(p_.DriveForceMin_N, Fx_LongControlRequest_N));
+      std::min(p_.DriveForceMax_N, std::max(p_.DriveForceMin_N, Fx_LongControlRequest_N));
 
     // debug signal
     logger_->log("RequestLongForce_N", Fx_LongControlRequest_N);
@@ -193,28 +184,9 @@ public:
   {
     LongAcc_target_mps2_ = long_acc_target_mps2;
   }
-  void set_slip_control_status(const SlipControlStatus & slip_control_status)
+  void set_slip_control_active(const bool status)
   {
-    slip_control_status_ = slip_control_status;
-  }
-  void set_operation_mode(const tam::types::control::AutowareOperationMode & operation_mode)
-  {
-    switch (operation_mode) {
-      case tam::types::control::AutowareOperationMode::AUTONOMOUS:
-        EnableDriver_ = true;
-        EnableEmergency_ = false;
-        break;
-      case tam::types::control::AutowareOperationMode::STOP:
-        EnableDriver_ = true;
-        EnableEmergency_ = true;
-        break;
-      case tam::types::control::AutowareOperationMode::REMOTE:
-        EnableDriver_ = false;
-        EnableEmergency_ = false;
-        break;
-      default:
-        break;
-    }
+    slip_control_active_ = status;
   }
   // Outputs
   double get_Fx_command() const { return Fx_LongControlRequest_N; }

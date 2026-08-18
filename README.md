@@ -14,7 +14,7 @@ The figure below shows the structure of the longitudinal control system consisti
 
 <img src="docs/images/OverallStructure.png" alt="Overall Structure" width="350"/>
 
-The longitudinal controller itself is composed of multiple submodules as shown in the Figure below.
+The longitudinal controller itself is composed of multiple submodules as shown in the Figure below (The slip calculation and stability control modules where moved to a separate stability control package in Release v2.0.0: [Stability Control](https://github.com/PhillPi/paper_stabillity_control.git)).
 
 <img src="docs/images/LongControlStructure.png" alt="Longitudinal Controller" width="400"/>
 
@@ -27,7 +27,7 @@ The parameters can be configured in the files in the config folder. All paramete
 Build the Code using colcon:
 
 ```bash
-colcon build --packages-up-to brake_temperature_controller_node_cpp gear_shift_controller_node_cpp longitudinal_controller_node_cpp
+colcon build --packages-up-to brake_temperature_controller_node_cpp gear_shift_controller_node_cpp longitudinal_controller_node_cpp && cp -r config/vehicle_handler/DummyVehicle/* install/vehicle_handler_cpp/share/vehicle_handler_cpp/config_overwrite/DummyVehicle/
 ```
 
 Launch the nodes individually:

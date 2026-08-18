@@ -19,40 +19,30 @@
 #include "long_acc_controller_tam_cpp/components/ax_controller.hpp"
 #include "long_acc_controller_tam_cpp/components/brake_pressure_controller.hpp"
 #include "long_acc_controller_tam_cpp/components/fx_controller.hpp"
-#include "long_acc_controller_tam_cpp/components/slip_calculation.hpp"
-#include "long_acc_controller_tam_cpp/components/slip_controller/slip_controller.hpp"
 namespace tam::control
 {
 class LongAccControllerCpp{
   using AxController_t = tam::control::AxController;
   using BrakePressureController_t = tam::control::BrakePressureController;
   using FxController_t = tam::control::FxController;
-  using SlipCalculation_t = tam::control::SlipCalculation;
-  using SlipController_t = tam::control::SlipController;
 
 private:
   int8_t gear_request_{};
   // Components
-  std::unique_ptr<SlipCalculation_t> slip_calculation{};
   std::unique_ptr<AxController_t> ax_control{};
   std::unique_ptr<BrakePressureController_t> brake_pressure_control{};
   std::unique_ptr<FxController_t> fx_control{};
-  std::unique_ptr<SlipController_t> slip_control{};
 
   tam::types::control::ICECommand ice_command_{};  // Output struct
   // Integration
   tam::tsl::LoggerComposer::SharedPtr logger_composer_ = std::make_shared<tam::tsl::LoggerComposer>(
     std::vector<tam::tsl::LoggerAccessInterface::SharedPtr>());
-  // SEtup the composing param manager
+  // Setup the composing param manager
   tam::pmg::ParamManagerComposer::SharedPtr param_manager_ =
     std::make_shared<tam::pmg::ParamManagerComposer>(
       std::vector<tam::pmg::MgmtInterface::SharedPtr>{
-        slip_calculation->get_param_handler(), ax_control->get_param_handler(),
-        brake_pressure_control->get_param_handler(), fx_control->get_param_handler(),
-        slip_control->get_param_handler()});
-
-  // Helpers for the next cycle
-  SlipControlStatus slip_control_status{};
+        ax_control->get_param_handler(),
+        brake_pressure_control->get_param_handler(), fx_control->get_param_handler()});
 
 public:
   // Constructor and deconstructor
@@ -71,16 +61,10 @@ public:
     const tam::types::common::DataPerWheel<double> & brake_pressure_Pa);
   void set_feedback_brake_pressure_Pa(
     const tam::types::common::DataPerWheel<double> & brake_pressure_Pa);
-  void set_feedback_wheelspeed_radps(
-    const tam::types::common::DataPerWheel<double> & wheelspeed_radps);
   void set_feedback_odometry(const tam::types::control::Odometry & odometry);
-  void set_feedback_steering_rad(
-    const tam::types::control::AutowareSteeringReport & steering);
   void set_long_acc_target_mps2(const double & long_acc_target_mps);
-  void set_operation_mode(
-    const tam::types::control::AutowareOperationMode & operation_mode);
   void set_gear_control_request(const int8_t & gear_control_req);
-  void set_wheelspeed_ok(bool status);
+  void set_slip_control_active(const bool status);
   // Outputs
   tam::types::control::ICECommand get_ice_commands() { return ice_command_; }
   tam::tsl::LoggerAccessInterface::SharedPtr get_debug_out() { return logger_composer_; };

@@ -6,14 +6,13 @@
 #include <vector>
 
 #include "controller_helpers_cpp/engine_map.hpp"
-#include "long_acc_controller_tam_cpp/components/slip_controller/slip_controller_types.hpp"
 #include "param_management_cpp/param_value_manager.hpp"
 #include "tsl_logger_cpp/value_logger.hpp"
 #include "tum_helpers_cpp/constants.hpp"
 #include "tum_helpers_cpp/geometry/geometry.hpp"
 #include "tum_types_cpp/common.hpp"
 #include "tum_types_cpp/control.hpp"
-// region Controller Interface
+
 namespace tam::control
 {
 class FxController
@@ -74,28 +73,9 @@ public:
   {
     v_mps_ = tam::helpers::geometry::euclidean_norm(odometry.velocity_mps);
   }
-  void set_slip_control_status(const SlipControlStatus & slip_control_status)
+  void set_slip_control_active(const bool status)
   {
-    slip_control_status_ = slip_control_status;
-  }
-  void set_operation_mode(const tam::types::control::AutowareOperationMode & operation_mode)
-  {
-    switch (operation_mode) {
-      case tam::types::control::AutowareOperationMode::AUTONOMOUS:
-        EnableDriver_ = true;
-        EnableEmergency_ = false;
-        break;
-      case tam::types::control::AutowareOperationMode::STOP:
-        EnableDriver_ = true;
-        EnableEmergency_ = true;
-        break;
-      case tam::types::control::AutowareOperationMode::REMOTE:
-        EnableDriver_ = false;
-        EnableEmergency_ = false;
-        break;
-      default:
-        break;
-    }
+    slip_control_active_ = status;
   }
   void set_target_brake_warmup_pressure_Pa(
     const tam::types::common::DataPerWheel<double> & brake_pressure_Pa)
@@ -104,7 +84,7 @@ public:
   }
   // Outputs
   double get_throttle_command() const { return throttle_command_; }
-  tam::types::common::DataPerWheel<double> get_break_pressure_target() const
+  tam::types::common::DataPerWheel<double> get_brake_pressure_target_bar() const
   {
     return break_pressure_target_bar_;
   }
@@ -173,9 +153,7 @@ private:
   double v_mps_{};
   tam::types::common::DataPerWheel<double> target_pressure_brake_warmup_bar_{};
   tam::types::common::DataPerWheel<double> break_pressure_target_bar_{};
-
-  SlipControlStatus slip_control_status_{};
-  bool EnableDriver_{}, EnableEmergency_{};
+  bool slip_control_active_{};
 
   // filters
   tam::helpers::control::FirstOrderLowPass<double> T_max_filter_{};
@@ -380,21 +358,19 @@ private:
                         (std::chrono::steady_clock::now() - time_last_gearshift_request_))
                           .count() < p_.throttle_shift_wait_time_s;
 
-    bool slip_control_active = slip_control_status_.abs_latched || slip_control_status_.tc_latched;
-
-    bool integrator_switch = EnableDriver_ && throttle_pos_target - 1.0 < 1e-10 &&
-                             throttle_pos_target > 0.0 && controller_switch && !slip_control_active;
+    bool integrator_switch = throttle_pos_target - 1.0 < 1e-10 &&
+                             throttle_pos_target > 0.0 && controller_switch && !slip_control_active_;
 
     // PID step
     tam::helpers::control::PIDFeedback throttle_fb = pid_throttle.step(
-      ax_error_adaptive_mps2, EnableDriver_, !pid_switch, integrator_switch,
-      pid_switch || slip_control_active, EnableDriver_ && !pid_switch);
+      ax_error_adaptive_mps2, true, !pid_switch, integrator_switch,
+      pid_switch || slip_control_active_, !pid_switch);
 
     // saturate feedback
     double throttle_pos_feedback =
       std::max(
         p_.throttle_saturation_neg, std::min(throttle_fb.feedback, p_.throttle_saturation_pos)) *
-      (!slip_control_active);
+      (!slip_control_active_);
     throttle_saturation_triggered_ = std::abs(throttle_pos_feedback - throttle_fb.feedback) > 1e-10;
 
     // add + saturate throttle position
@@ -409,8 +385,6 @@ private:
     throttle_pos = v_mps >= p_.MaxThrottleLowSpeedVelocity_mps
                      ? throttle_pos
                      : std::min(p_.MaxThrottleLowSpeed, throttle_pos);
-    // clip throttle for emergency
-    throttle_pos = EnableEmergency_ ? 0.0 : throttle_pos;
 
     // debug
     logger_->log("Throttle_FB_p", throttle_fb.feedback_p);
@@ -460,4 +434,3 @@ private:
   }
 };
 }  // namespace tam::control
-// endregion

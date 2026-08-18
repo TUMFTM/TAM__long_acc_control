@@ -20,6 +20,7 @@
 #include "tum_msgs/msg/tum_float32_stamped.hpp"
 #include "tum_msgs/msg/tum_float64_per_wheel_stamped.hpp"
 #include "tum_msgs/msg/tum_int8_stamped.hpp"
+#include "tum_msgs/msg/tum_bool_stamped.hpp"
 //
 #include "tum_msgs/msg/tum_longitudinal_cmd.hpp"
 
@@ -88,6 +89,7 @@ private:
   void brake_warmup_pressure_callback(
     const tum_msgs::msg::TUMFloat64PerWheelStamped::SharedPtr msg);
   void gear_request_callback(const tum_msgs::msg::TUMInt8Stamped::SharedPtr msg);
+  void slip_control_active_callback(const tum_msgs::msg::TUMBoolStamped::SharedPtr msg);
 
   // Subscriptions
   rclcpp::Subscription<geometry_msgs::msg::AccelWithCovarianceStamped>::SharedPtr
@@ -104,6 +106,7 @@ private:
   rclcpp::Subscription<tum_msgs::msg::TUMFloat64PerWheelStamped>::SharedPtr
     sub_warmup_brake_pressure_{};
   rclcpp::Subscription<tum_msgs::msg::TUMInt8Stamped>::SharedPtr sub_gear_request_{};
+  rclcpp::Subscription<tum_msgs::msg::TUMBoolStamped>::SharedPtr sub_slip_control_active_{};
 
   // Publishers
   rclcpp::Publisher<tum_msgs::msg::TUMLongitudinalCmd>::SharedPtr ctrl_cmd_pub_{};

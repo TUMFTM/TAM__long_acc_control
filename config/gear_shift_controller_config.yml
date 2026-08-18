@@ -2,7 +2,6 @@
   GearShiftControllerNode:
     ros__parameters:
       GSC_gear_omega_engine_min_table:
-        - 0.0
         - 0.0   # 1
         - 5000.0 # 2
         - 5000.0 # 3

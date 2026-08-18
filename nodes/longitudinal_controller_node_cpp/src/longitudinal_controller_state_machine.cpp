@@ -5,6 +5,7 @@ LongitudinalControllerStateMachine::LongitudinalControllerStateMachine()
   received_once_.fill(false);
   timeout_detected_.fill(false);
   state_ = longitudinal_controller_state_::startup;
+  received_once_[Signals::Slip_Control_Active] = true;  // Slip control is not always used, so we don't want to wait for it
 }
 LongitudinalControllerStateMachine::DiagnosticReturn
 LongitudinalControllerStateMachine::get_diagnostic_state()

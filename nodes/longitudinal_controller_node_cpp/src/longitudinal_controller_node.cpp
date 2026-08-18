@@ -1,5 +1,6 @@
 // Copyright 2023 Daniel Esser
 #include "longitudinal_controller_node_cpp/longitudinal_controller_node.hpp"
+#include "tum_ros_helpers_cpp/qos.hpp"
 #include "tum_ros_helpers_cpp/timer.hpp"
 
 using std::placeholders::_1;
@@ -53,56 +54,43 @@ LongitudinalControllerNode::LongitudinalControllerNode(
   //   Subscriber
   sub_acceleration_ =
     topic_watchdog_->add_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
-      "/core/state/acceleration", 1,
+      "/core/state/acceleration", tam::ros::get_qos(),
       std::bind(&LongitudinalControllerNode::acceleration_callback, this, _1),
       longitudinal_controller_state_machine_->GetTimeoutFunction(
         LongitudinalControllerStateMachine::Signals::Acceleration),
       timeout_values.value_ms("StateEstimation"));
 
   sub_omega_engine_ = topic_watchdog_->add_subscription<tum_msgs::msg::TUMFloat32Stamped>(
-    "/vehicle/sensor/omega_engine_radps", 1,
+    "/vehicle/sensor/omega_engine_radps", tam::ros::get_qos(),
     std::bind(&LongitudinalControllerNode::omega_engine_callback, this, _1),
     longitudinal_controller_state_machine_->GetTimeoutFunction(
       LongitudinalControllerStateMachine::Signals::Omega_Engine),
     timeout_values.value_ms("Default"));
 
   sub_gear_ = topic_watchdog_->add_subscription<tum_msgs::msg::TUMInt8Stamped>(
-    "/vehicle/sensor/gear", 1, std::bind(&LongitudinalControllerNode::gear_callback, this, _1),
+    "/vehicle/sensor/gear", tam::ros::get_qos(),
+    std::bind(&LongitudinalControllerNode::gear_callback, this, _1),
     longitudinal_controller_state_machine_->GetTimeoutFunction(
       LongitudinalControllerStateMachine::Signals::Gear),
     timeout_values.value_ms("Default"));
 
   sub_brake_pressure_ = topic_watchdog_->add_subscription<tum_msgs::msg::TUMFloat64PerWheelStamped>(
-    "/vehicle/sensor/brake_pressure_Pa", 1,
+    "/vehicle/sensor/brake_pressure_Pa", tam::ros::get_qos(),
     std::bind(&LongitudinalControllerNode::brake_pressure_callback, this, _1),
     longitudinal_controller_state_machine_->GetTimeoutFunction(
       LongitudinalControllerStateMachine::Signals::Brake_Pressure),
     timeout_values.value_ms("Default"));
 
-  sub_wheelspeed_ = topic_watchdog_->add_subscription<tum_msgs::msg::TUMFloat64PerWheelStamped>(
-    "/vehicle/sensor/wheelspeed_radps", 1,
-    std::bind(&LongitudinalControllerNode::wheelspeeds_callback, this, _1),
-    longitudinal_controller_state_machine_->GetTimeoutFunction(
-      LongitudinalControllerStateMachine::Signals::Wheelspeeds),
-    timeout_values.value_ms("Default"));
-
   sub_odometry_ = topic_watchdog_->add_subscription<nav_msgs::msg::Odometry>(
-    "/core/state/odometry", 1, std::bind(&LongitudinalControllerNode::odometry_callback, this, _1),
+    "/core/state/odometry", tam::ros::get_qos(),
+    std::bind(&LongitudinalControllerNode::odometry_callback, this, _1),
     longitudinal_controller_state_machine_->GetTimeoutFunction(
       LongitudinalControllerStateMachine::Signals::Odometry),
     timeout_values.value_ms("StateEstimation"));
 
-  sub_steering_report_ =
-    topic_watchdog_->add_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>(
-      "/vehicle/sensor/steering_report", 1,
-      std::bind(&LongitudinalControllerNode::steering_report_callback, this, _1),
-      longitudinal_controller_state_machine_->GetTimeoutFunction(
-        LongitudinalControllerStateMachine::Signals::Steering_Report),
-      timeout_values.value_ms("Default"));
-
   sub_long_acc_target_ =
     topic_watchdog_->add_subscription<autoware_auto_control_msgs::msg::AckermannControlCommand>(
-      "/core/control/control_command", 1,
+      "/core/control/tracking_controller/control_request", tam::ros::get_qos(),
       std::bind(&LongitudinalControllerNode::target_acceleration_callback, this, _1),
       longitudinal_controller_state_machine_->GetTimeoutFunction(
         LongitudinalControllerStateMachine::Signals::Target_Acceleration),
@@ -110,7 +98,7 @@ LongitudinalControllerNode::LongitudinalControllerNode(
 
   sub_warmup_brake_pressure_ =
     topic_watchdog_->add_subscription<tum_msgs::msg::TUMFloat64PerWheelStamped>(
-      "/core/control/warm_up_brake_pressure_pa", 1,
+      "/core/control/warm_up_brake_pressure_pa", tam::ros::get_qos(),
       std::bind(&LongitudinalControllerNode::brake_warmup_pressure_callback, this, _1),
       [this](bool timeout, std::chrono::milliseconds) {
         if (timeout) {
@@ -122,15 +110,22 @@ LongitudinalControllerNode::LongitudinalControllerNode(
       timeout_values.default_or_ms(""));
 
   sub_gear_request_ = topic_watchdog_->add_subscription<tum_msgs::msg::TUMInt8Stamped>(
-    "/core/control/gear_request", 1,
+    "/core/control/gear_request", tam::ros::get_qos(),
     std::bind(&LongitudinalControllerNode::gear_request_callback, this, _1),
     longitudinal_controller_state_machine_->GetTimeoutFunction(
       LongitudinalControllerStateMachine::Signals::Gear_Request),
     timeout_values.value_ms("Default"));
 
+  sub_slip_control_active_ = topic_watchdog_->add_subscription<tum_msgs::msg::TUMBoolStamped>(
+    "/core/control/slip_control_active", tam::ros::get_qos(),
+    std::bind(&LongitudinalControllerNode::slip_control_active_callback, this, _1),
+    longitudinal_controller_state_machine_->GetTimeoutFunction(
+      LongitudinalControllerStateMachine::Signals::Slip_Control_Active),
+    timeout_values.value_ms("Default"));
+
   // Publisher
   ctrl_cmd_pub_ = this->create_publisher<tum_msgs::msg::TUMLongitudinalCmd>(
-    "/core/control/longitudinal_request", 1);
+    "/core/control/longitudinal_controller/longitudinal_request", tam::ros::get_qos());
 }
 void LongitudinalControllerNode::function_queue_callback()
 {
@@ -155,11 +150,6 @@ void LongitudinalControllerNode::model_update_callback()
   }
 
   cycle_count_++;
-
-  tam::types::control::AutowareOperationMode mode;
-  // TODO(Simon S) Do not hardcode
-  mode = tam::types::control::AutowareOperationMode::AUTONOMOUS;
-  longitudinal_controller_->set_operation_mode(mode);
 
   // step controller
   longitudinal_controller_->step();
@@ -211,13 +201,6 @@ void LongitudinalControllerNode::evaluate_diagnostics()
     state_machine_state.state !=
     LongitudinalControllerStateMachine::longitudinal_controller_state_::startup) {
     node_monitor_->initialization_finished();
-  }
-
-  if (longitudinal_controller_state_machine_->CheckIsTimeouted(
-        LongitudinalControllerStateMachine::Signals::Wheelspeeds)) {
-    longitudinal_controller_->set_wheelspeed_ok(false);
-  } else {
-    longitudinal_controller_->set_wheelspeed_ok(true);
   }
 
   node_monitor_->set_message(state_machine_state.message);
@@ -287,19 +270,6 @@ void LongitudinalControllerNode::gear_request_callback(
     LongitudinalControllerStateMachine::Signals::Gear_Request);
   longitudinal_controller_->set_gear_control_request(msg->data);
 }
-void LongitudinalControllerNode::wheelspeeds_callback(
-  const tum_msgs::msg::TUMFloat64PerWheelStamped::SharedPtr msg)
-{
-  longitudinal_controller_state_machine_->SetReceivedOnce(
-    LongitudinalControllerStateMachine::Signals::Wheelspeeds);
-
-  tam::types::common::DataPerWheel<double> input;
-  input.front_left = msg->data.front_left;
-  input.front_right = msg->data.front_right;
-  input.rear_left = msg->data.rear_left;
-  input.rear_right = msg->data.rear_right;
-  longitudinal_controller_->set_feedback_wheelspeed_radps(input);
-}
 void LongitudinalControllerNode::odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   longitudinal_controller_state_machine_->SetReceivedOnce(
@@ -310,16 +280,6 @@ void LongitudinalControllerNode::odometry_callback(const nav_msgs::msg::Odometry
 
   longitudinal_controller_->set_feedback_odometry(input);
 }
-void LongitudinalControllerNode::steering_report_callback(
-  const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg)
-{
-  longitudinal_controller_state_machine_->SetReceivedOnce(
-    LongitudinalControllerStateMachine::Signals::Steering_Report);
-
-  tam::types::control::AutowareSteeringReport input;
-  input.steering_angle_tire_rad = msg->steering_tire_angle;
-  longitudinal_controller_->set_feedback_steering_rad(input);
-}
 void LongitudinalControllerNode::target_acceleration_callback(
   const autoware_auto_control_msgs::msg::AckermannControlCommand::SharedPtr msg)
 {
@@ -329,5 +289,11 @@ void LongitudinalControllerNode::target_acceleration_callback(
   longitudinal_controller_->set_long_acc_target_mps2(msg->longitudinal.acceleration);
 
   LongitudinalControllerNode::model_update_callback();
+}
+void LongitudinalControllerNode::slip_control_active_callback(const tum_msgs::msg::TUMBoolStamped::SharedPtr msg)
+{
+  longitudinal_controller_state_machine_->SetReceivedOnce(
+    LongitudinalControllerStateMachine::Signals::Slip_Control_Active);
+  longitudinal_controller_->set_slip_control_active(msg->data);
 }
 }  // namespace tam::control

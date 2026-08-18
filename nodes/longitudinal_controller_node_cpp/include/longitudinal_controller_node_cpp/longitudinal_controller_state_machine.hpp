@@ -18,10 +18,9 @@ public:
     Omega_Engine,
     Gear,
     Brake_Pressure,
-    Wheelspeeds,
-    Steering_Report,
     Target_Acceleration,
     Gear_Request,
+    Slip_Control_Active,
     CNT_NUM_SIGNALS
   };
   struct DiagnosticReturn
@@ -48,10 +47,9 @@ private:
     {Signals::Omega_Engine, tam::types::ErrorLvl::ERROR, "w_eng"},
     {Signals::Gear, tam::types::ErrorLvl::ERROR, "gear"},
     {Signals::Brake_Pressure, tam::types::ErrorLvl::ERROR, "p_br"},
-    {Signals::Wheelspeeds, tam::types::ErrorLvl::ERROR, "w_wheel"},
-    {Signals::Steering_Report, tam::types::ErrorLvl::WARN, "steer"},
     {Signals::Target_Acceleration, tam::types::ErrorLvl::ERROR, "tar_acc"},
-    {Signals::Gear_Request, tam::types::ErrorLvl::ERROR, "gear_req"}};
+    {Signals::Gear_Request, tam::types::ErrorLvl::ERROR, "gear_req"},
+    {Signals::Slip_Control_Active, tam::types::ErrorLvl::WARN, "slip_ctrl"}};
 
   std::array<bool, Signals::CNT_NUM_SIGNALS> received_once_;
   std::array<bool, Signals::CNT_NUM_SIGNALS> timeout_detected_;
