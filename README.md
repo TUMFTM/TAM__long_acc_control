@@ -2,7 +2,7 @@
 
 [![Linux](https://img.shields.io/badge/os-linux-blue.svg)](https://www.linux.org/)
 [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://www.docker.com/)
-[![ROS2humble](https://img.shields.io/badge/ros2-humble-blue.svg)](https://docs.ros.org/en/humble/index.html)
+[![ROS2jazzy](https://img.shields.io/badge/ros2-jazzy-blue.svg)](https://docs.ros.org/en/jazzy/index.html)
 [![Paper](https://img.shields.io/badge/Paper-10.1109%2FIV64158.2025.11097559-blue?logo=doi&logoColor=white)](https://doi.org/10.1109/IV64158.2025.11097559)
 [![Software](https://img.shields.io/badge/Software-10.5281%2Fzenodo.21899629-blue?logo=zenodo&logoColor=white)](https://doi.org/10.5281/zenodo.21899629)
 

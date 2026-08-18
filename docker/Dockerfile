@@ -1,12 +1,12 @@
 # ROS Distro
-ARG ROS_DISTRO=humble
+ARG ROS_DISTRO=jazzy
 FROM ros:$ROS_DISTRO
 
 # Set working directory
 RUN mkdir /ws
 WORKDIR /ws
 
-RUN sudo apt update && sudo apt install -y -q --no-install-recommends ros-humble-geographic-msgs ros-humble-ros2-socketcan libboost-all-dev
+RUN sudo apt update && sudo apt install -y -q --no-install-recommends ros-jazzy-geographic-msgs libboost-all-dev
 
 # Copy repo into the container
 COPY . /ws/src
